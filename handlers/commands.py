@@ -26,6 +26,8 @@ async def cmd_start(message: Message, config: Config, state: FSMContext) -> None
     user_data = await state.get_data()
     language = user_data.get("language", config.available_languages[0])
     
+    logger.info(f"User {message.from_user.id} started the bot. State: {user_data}, Language: {language}")
+    
     welcome_text = Localization.get(
         "welcome",
         language,

@@ -44,12 +44,18 @@ async def callback_language_selection(
     # Save selected language to user state
     await state.update_data(language=selected_language)
     
+    # Verify the state was updated
+    user_data = await state.get_data()
+    logger.info(f"User {callback.from_user.id} state after update: {user_data}")
+    
     # Send confirmation message in the selected language
     confirmation_text = Localization.get(
         "language_changed",
         selected_language,
-        language=selected_language.upper()
+        lang=selected_language.upper()
     )
+    
+    logger.info(f"Confirmation text: {confirmation_text}")
     
     # Answer callback query to remove loading state
     await callback.answer(confirmation_text)

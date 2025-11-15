@@ -26,7 +26,7 @@ class Localization:
                 "Выберите язык с помощью /language, затем используйте /random для получения случайных статей!"
             ),
             "language_selection": "🌍 Выберите язык для статей:\n\nТекущий язык: {current}",
-            "language_changed": "✅ Язык изменен на: {language}",
+            "language_changed": "✅ Язык изменен на: {lang}",
             "read_more": "Читать полностью",
             "error_fetch": (
                 "❌ Не удалось получить статью, попробуйте позже.\n\n"
@@ -55,7 +55,7 @@ class Localization:
                 "Choose a language using /language, then use /random to get random articles!"
             ),
             "language_selection": "🌍 Select article language:\n\nCurrent language: {current}",
-            "language_changed": "✅ Language changed to: {language}",
+            "language_changed": "✅ Language changed to: {lang}",
             "read_more": "Read more",
             "error_fetch": (
                 "❌ Failed to fetch article, please try again later.\n\n"
@@ -80,8 +80,13 @@ class Localization:
         Returns:
             Localized message string
         """
+        import logging
+        logger = logging.getLogger(__name__)
+        
         # Default to English if language not supported
         lang = language if language in cls.TRANSLATIONS else "en"
+        
+        logger.info(f"Localization.get: key='{key}', language='{language}', resolved_lang='{lang}'")
         
         # Get message template
         message = cls.TRANSLATIONS[lang].get(key, cls.TRANSLATIONS["en"].get(key, ""))
@@ -90,7 +95,7 @@ class Localization:
         if kwargs:
             try:
                 message = message.format(**kwargs)
-            except KeyError:
-                pass
+            except KeyError as e:
+                logger.error(f"Format error in localization: {e}")
         
         return message
