@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import Config
+from localization import Localization
 
 
 logger = logging.getLogger(__name__)
@@ -43,14 +44,15 @@ async def callback_language_selection(
     # Save selected language to user state
     await state.update_data(language=selected_language)
     
-    # Send confirmation message
-    confirmation_text = (
-        f"✅ Язык изменен на {selected_language.upper()}\n\n"
-        f"Теперь используйте /random для получения случайных статей на этом языке."
+    # Send confirmation message in the selected language
+    confirmation_text = Localization.get(
+        "language_changed",
+        selected_language,
+        language=selected_language.upper()
     )
     
     # Answer callback query to remove loading state
-    await callback.answer(f"Выбран язык: {selected_language.upper()}")
+    await callback.answer(confirmation_text)
     
     # Edit the original message to show confirmation
     await callback.message.edit_text(confirmation_text)
