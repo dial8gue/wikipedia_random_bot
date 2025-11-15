@@ -1,6 +1,7 @@
 """Command handlers for the Wikipedia Telegram bot."""
 
 import logging
+from html import escape
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -80,11 +81,15 @@ async def cmd_random(
             # Get localized "Read more" text
             read_more_text = Localization.get("read_more", language)
             
+            # Escape HTML special characters in title and extract
+            title_escaped = escape(article.title)
+            extract_escaped = escape(article.extract)
+            
             # Format response with title, extract, and URL
             response_text = (
-                f"🎲 <b>{article.title}</b>\n\n"
-                f"{article.extract}\n\n"
-                f"🔗 <a href='{article.url}'>{read_more_text}</a>"
+                f"🎲 <b>{title_escaped}</b>\n\n"
+                f"{extract_escaped}\n\n"
+                f'🔗 <a href="{article.url}">{read_more_text}</a>'
             )
             await message.answer(response_text, disable_web_page_preview=False)
             logger.info(f"Successfully sent random article to user {message.from_user.id}")
