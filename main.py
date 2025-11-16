@@ -73,6 +73,7 @@ async def main() -> None:
     finally:
         # Graceful shutdown
         logger.info("Shutting down bot...")
+        await wikipedia_service.close()
         await bot.session.close()
         await storage.close()
         logger.info("Bot stopped successfully")
