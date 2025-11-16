@@ -53,6 +53,23 @@ async def cmd_help(message: Message, state: FSMContext, config: Config) -> None:
     logger.info(f"User {message.from_user.id} requested help")
 
 
+def create_more_button_keyboard(language: str) -> InlineKeyboardMarkup:
+    """
+    Create inline keyboard with "More" button.
+    
+    Args:
+        language: Language code for button text localization
+        
+    Returns:
+        InlineKeyboardMarkup with "More" button
+    """
+    button_text = Localization.get("more_button", language)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=button_text, callback_data="get_more_article")]
+    ])
+    return keyboard
+
+
 async def cmd_random(
     message: Message,
     state: FSMContext,
@@ -62,7 +79,7 @@ async def cmd_random(
     """
     Handle /random command - send random Wikipedia article link.
     
-    Requirements: 4.3, 1.1, 1.2, 1.3, 1.4
+    Requirements: 4.3, 1.1, 1.2, 1.3, 1.4, 6.1, 6.3
     """
     # Get user's selected language from state, or use first available language as default
     user_data = await state.get_data()
@@ -91,7 +108,11 @@ async def cmd_random(
                 f"{extract_escaped}\n\n"
                 f'<a href="{article.url}">{read_more_text}</a>'
             )
-            await message.answer(response_text, disable_web_page_preview=False)
+            
+            # Create inline keyboard with "More" button
+            keyboard = create_more_button_keyboard(language)
+            
+            await message.answer(response_text, reply_markup=keyboard, disable_web_page_preview=False)
             logger.info(f"Successfully sent random article to user {message.from_user.id}")
         else:
             # Error occurred while fetching article

@@ -61,7 +61,7 @@ async def main() -> None:
     # Register all handlers
     logger.info("Registering handlers...")
     setup_command_handlers(dp, config, wikipedia_service)
-    setup_callback_handlers(dp, config)
+    setup_callback_handlers(dp, config, wikipedia_service)
     logger.info("All handlers registered successfully")
     
     # Start polling with graceful shutdown

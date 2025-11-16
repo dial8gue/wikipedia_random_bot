@@ -28,6 +28,7 @@ class Localization:
             "language_selection": "🌍 Выберите язык для статей:\n\nТекущий язык: {current}",
             "language_changed": "✅ Язык изменен на: {lang}",
             "read_more": "Читать полностью",
+            "more_button": "🎲 Ещё",
             "error_fetch": (
                 "❌ Не удалось получить статью, попробуйте позже.\n\n"
                 "Возможные причины:\n"
@@ -56,7 +57,8 @@ class Localization:
             ),
             "language_selection": "🌍 Select article language:\n\nCurrent language: {current}",
             "language_changed": "✅ Language changed to: {lang}",
-            "read_more": "Read more",
+            "read_more": "Read full article",
+            "more_button": "🎲 More",
             "error_fetch": (
                 "❌ Failed to fetch article, please try again later.\n\n"
                 "Possible reasons:\n"

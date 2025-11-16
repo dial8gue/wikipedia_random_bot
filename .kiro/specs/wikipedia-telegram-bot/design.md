@@ -84,12 +84,15 @@ API endpoint: `https://{lang}.wikipedia.org/api/rest_v1/page/random/summary`
 
 - `/start`: Приветственное сообщение
 - `/help`: Список команд
-- `/random`: Получить случайную статью
+- `/random`: Получить случайную статью с inline-кнопкой "Ещё"
 - `/language`: Выбор языка
+
+При отправке случайной статьи добавляется inline-кнопка с локализованным текстом для быстрого получения следующей статьи.
 
 #### Callback Handlers (`handlers/callbacks.py`)
 
 - Обработка выбора языка через inline-кнопки
+- Обработка нажатия кнопки "Ещё" для получения новой случайной статьи
 
 ### 5. State Management (`states.py`)
 
@@ -99,6 +102,22 @@ API endpoint: `https://{lang}.wikipedia.org/api/rest_v1/page/random/summary`
 class UserState(StatesGroup):
     language = State()
 ```
+
+### 6. Localization Module (`localization.py`)
+
+Управление локализацией сообщений и кнопок:
+
+```python
+class Localization:
+    TRANSLATIONS: Dict[str, Dict[str, str]]
+    
+    @classmethod
+    def get(key: str, language: str, **kwargs) -> str:
+        # Returns localized message
+```
+
+Ключи локализации для кнопки "Ещё":
+- `more_button`: Текст кнопки "Ещё" / "More" / и т.д.
 
 ## Data Models
 
@@ -125,6 +144,38 @@ class UserState(StatesGroup):
     }
 }
 ```
+
+### Inline Keyboard для кнопки "Ещё"
+
+```python
+InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(
+        text=Localization.get("more_button", user_language),
+        callback_data="get_more_article"
+    )]
+])
+```
+
+Callback data: `get_more_article` - идентификатор для обработки нажатия кнопки
+
+## Implementation Details
+
+### Кнопка "Ещё"
+
+При отправке случайной статьи пользователю:
+
+1. Получить текущий язык пользователя из состояния FSM
+2. Получить локализованный текст кнопки через `Localization.get("more_button", language)`
+3. Создать `InlineKeyboardMarkup` с одной кнопкой
+4. Отправить сообщение со статьей и клавиатурой
+
+При нажатии кнопки "Ещё":
+
+1. Обработать callback с `callback_data="get_more_article"`
+2. Получить текущий язык пользователя из состояния
+3. Запросить новую случайную статью через `WikipediaService`
+4. Отправить новую статью с той же inline-кнопкой
+5. Ответить на callback query для удаления индикатора загрузки
 
 ## Error Handling
 
@@ -155,12 +206,16 @@ class UserState(StatesGroup):
 ### Integration Tests
 
 - `test_handlers.py`: Тестирование обработчиков команд с aiogram test utilities
+- Тестирование callback-обработчика кнопки "Ещё"
+- Проверка корректной локализации текста кнопки
 
 ### Manual Testing
 
 - Проверка работы бота в реальном Telegram
 - Тестирование различных языков
 - Проверка обработки ошибок
+- Проверка работы кнопки "Ещё" на разных языках
+- Проверка последовательного нажатия кнопки "Ещё" несколько раз
 
 ## Docker Configuration
 
