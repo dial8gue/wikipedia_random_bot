@@ -89,7 +89,7 @@ async def cmd_random(
             response_text = (
                 f"🎲 <b>{title_escaped}</b>\n\n"
                 f"{extract_escaped}\n\n"
-                f'🔗 <a href="{article.url}">{read_more_text}</a>'
+                f'<a href="{article.url}">{read_more_text}</a>'
             )
             await message.answer(response_text, disable_web_page_preview=False)
             logger.info(f"Successfully sent random article to user {message.from_user.id}")
