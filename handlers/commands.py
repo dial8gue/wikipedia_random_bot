@@ -1,7 +1,6 @@
 """Command handlers for the Wikipedia Telegram bot."""
 
 import logging
-from html import escape
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -11,6 +10,7 @@ from services.wikipedia import WikipediaService
 from states import UserState
 from config import Config
 from localization import Localization
+from handlers.utils import send_random_article
 
 
 logger = logging.getLogger(__name__)
@@ -53,23 +53,6 @@ async def cmd_help(message: Message, state: FSMContext, config: Config) -> None:
     logger.info(f"User {message.from_user.id} requested help")
 
 
-def create_more_button_keyboard(language: str) -> InlineKeyboardMarkup:
-    """
-    Create inline keyboard with "More" button.
-    
-    Args:
-        language: Language code for button text localization
-        
-    Returns:
-        InlineKeyboardMarkup with "More" button
-    """
-    button_text = Localization.get("more_button", language)
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=button_text, callback_data="get_more_article")]
-    ])
-    return keyboard
-
-
 async def cmd_random(
     message: Message,
     state: FSMContext,
@@ -90,41 +73,8 @@ async def cmd_random(
     # Show typing indicator
     await message.bot.send_chat_action(message.chat.id, "typing")
     
-    try:
-        # Fetch random article from Wikipedia API
-        article = await wikipedia_service.get_random_article(language)
-        
-        if article:
-            # Get localized "Read more" text
-            read_more_text = Localization.get("read_more", language)
-            
-            # Escape HTML special characters in title and extract
-            title_escaped = escape(article.title)
-            extract_escaped = escape(article.extract)
-            
-            # Format response with title, extract, and URL
-            response_text = (
-                f"🎲 <b>{title_escaped}</b>\n\n"
-                f"{extract_escaped}\n\n"
-                f'<a href="{article.url}">{read_more_text}</a>'
-            )
-            
-            # Create inline keyboard with "More" button
-            keyboard = create_more_button_keyboard(language)
-            
-            await message.answer(response_text, reply_markup=keyboard, disable_web_page_preview=False)
-            logger.info(f"Successfully sent random article to user {message.from_user.id}")
-        else:
-            # Error occurred while fetching article
-            error_text = Localization.get("error_fetch", language)
-            await message.answer(error_text)
-            logger.warning(f"Failed to fetch article for user {message.from_user.id}")
-            
-    except Exception as e:
-        # Handle unexpected errors
-        logger.error(f"Unexpected error in cmd_random for user {message.from_user.id}: {e}")
-        error_text = Localization.get("error_general", language)
-        await message.answer(error_text)
+    # Send random article using shared utility function
+    await send_random_article(message, language, wikipedia_service, message.from_user.id)
 
 
 async def cmd_language(message: Message, config: Config, state: FSMContext) -> None:

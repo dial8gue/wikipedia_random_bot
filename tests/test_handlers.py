@@ -6,8 +6,9 @@ from aiogram.types import Message, User, Chat, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from config import Config
 from services.wikipedia import WikipediaService
-from handlers.commands import cmd_start, cmd_help, cmd_random, cmd_language, create_more_button_keyboard
+from handlers.commands import cmd_start, cmd_help, cmd_random, cmd_language
 from handlers.callbacks import callback_language_selection, callback_get_more_article
+from handlers.utils import create_more_button_keyboard
 
 
 class TestCommandHandlers:

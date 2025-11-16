@@ -1,35 +1,18 @@
 """Callback query handlers for the Wikipedia Telegram bot."""
 
 import logging
-from html import escape
 from aiogram import Router
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import Config
 from localization import Localization
 from services.wikipedia import WikipediaService
+from handlers.utils import send_random_article
 
 
 logger = logging.getLogger(__name__)
 router = Router()
-
-
-def create_more_button_keyboard(language: str) -> InlineKeyboardMarkup:
-    """
-    Create inline keyboard with "More" button.
-    
-    Args:
-        language: Language code for button text localization
-        
-    Returns:
-        InlineKeyboardMarkup with "More" button
-    """
-    button_text = Localization.get("more_button", language)
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=button_text, callback_data="get_more_article")]
-    ])
-    return keyboard
 
 
 async def callback_language_selection(
@@ -110,42 +93,8 @@ async def callback_get_more_article(
     # Show typing indicator
     await callback.bot.send_chat_action(callback.message.chat.id, "typing")
     
-    try:
-        # Fetch random article from Wikipedia API
-        article = await wikipedia_service.get_random_article(language)
-        
-        if article:
-            # Get localized "Read more" text
-            read_more_text = Localization.get("read_more", language)
-            
-            # Escape HTML special characters in title and extract
-            title_escaped = escape(article.title)
-            extract_escaped = escape(article.extract)
-            
-            # Format response with title, extract, and URL
-            response_text = (
-                f"🎲 <b>{title_escaped}</b>\n\n"
-                f"{extract_escaped}\n\n"
-                f'<a href="{article.url}">{read_more_text}</a>'
-            )
-            
-            # Create inline keyboard with "More" button
-            keyboard = create_more_button_keyboard(language)
-            
-            # Send new article with "More" button
-            await callback.message.answer(response_text, reply_markup=keyboard, disable_web_page_preview=False)
-            logger.info(f"Successfully sent more article to user {callback.from_user.id}")
-        else:
-            # Error occurred while fetching article
-            error_text = Localization.get("error_fetch", language)
-            await callback.message.answer(error_text)
-            logger.warning(f"Failed to fetch more article for user {callback.from_user.id}")
-            
-    except Exception as e:
-        # Handle unexpected errors
-        logger.error(f"Unexpected error in callback_get_more_article for user {callback.from_user.id}: {e}")
-        error_text = Localization.get("error_general", language)
-        await callback.message.answer(error_text)
+    # Send random article using shared utility function
+    await send_random_article(callback.message, language, wikipedia_service, callback.from_user.id)
 
 
 def setup_handlers(router: Router, config: Config, wikipedia_service: WikipediaService) -> None:
