@@ -70,11 +70,13 @@ async def send_random_article(
         else:
             # Error occurred while fetching article
             error_text = Localization.get("error_fetch", language)
-            await message.answer(error_text)
+            keyboard = create_more_button_keyboard(language)
+            await message.answer(error_text, reply_markup=keyboard)
             logger.warning(f"Failed to fetch article for user {user_id}")
             
     except Exception as e:
         # Handle unexpected errors
         logger.error(f"Unexpected error sending article to user {user_id}: {e}")
         error_text = Localization.get("error_general", language)
-        await message.answer(error_text)
+        keyboard = create_more_button_keyboard(language)
+        await message.answer(error_text, reply_markup=keyboard)
